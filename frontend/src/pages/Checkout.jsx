@@ -1,6 +1,12 @@
 import React, { useState } from "react";
-
-const Checkout = ({ cart, placeOrder }) => {
+import { useSelector, useDispatch } from "react-redux";
+import { placeOrder } from "../slices/ordersSlice"; // Import the placeOrder action from the order slice
+import { useNavigate } from "react-router-dom";
+const Checkout = () => {
+  // Access the cart from the Redux store using useSelector
+  const cart = useSelector((state) => state.cart.items); // Access the cart array from Redux
+  const dispatch = useDispatch(); // To dispatch the placeOrder action
+  const navigate = useNavigate();
   const [billingInfo, setBillingInfo] = useState({
     fullName: "",
     email: "",
@@ -9,7 +15,7 @@ const Checkout = ({ cart, placeOrder }) => {
     state: "",
     zip: "",
   });
-
+  console.log("Cart in Checkout", cart);
   const [cardInfo, setCardInfo] = useState({
     cardNumber: "",
     expiryDate: "",
@@ -26,21 +32,18 @@ const Checkout = ({ cart, placeOrder }) => {
     setCardInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const total = cart?.length
-    ? cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
+  const total = cart.length
+    ? cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0)
     : 0;
-
-    const handlePlaceOrder = () => {
-        if (cart.length === 0) {
-          alert("Your cart is empty!");
-          return;
-        }
-    
-        // Process order and navigate to orders page
-        placeOrder();
-        alert("Order placed successfully!");
-        navigate("/orders");
-      };
+  const handlePlaceOrder = () => {
+    if (cart.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
+    // Dispatch placeOrder action
+    dispatch(placeOrder(cart));
+    navigate("/orders")
+  };
 
   return (
     <div className="min-h-screen p-8 bg-gray-50">
@@ -52,17 +55,17 @@ const Checkout = ({ cart, placeOrder }) => {
         {cart.map((item, index) => (
           <div key={index} className="flex items-center justify-between mb-4">
             <img
-              src={item.image}
+              src={item.product.image}
               alt={item.name}
               className="w-16 h-16 object-cover"
             />
             <div>
-              <h3 className="font-semibold">{item.name}</h3>
+              <h3 className="font-semibold">{item.product.name}</h3>
               <p>Quantity: {item.quantity}</p>
               <p>Size: {item.size}</p>
             </div>
             <p className="font-semibold">
-              ${(item.price * item.quantity).toFixed(2)}
+              ${(item.product.price * item.quantity).toFixed(2)}
             </p>
           </div>
         ))}
@@ -74,90 +77,35 @@ const Checkout = ({ cart, placeOrder }) => {
       {/* Billing Information */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <h2 className="text-xl font-semibold mb-4">Billing Information</h2>
-        <input
-          type="text"
-          name="fullName"
-          placeholder="Full Name"
-          value={billingInfo.fullName}
-          onChange={handleBillingChange}
-          className="border p-2 w-full mb-4 rounded"
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email Address"
-          value={billingInfo.email}
-          onChange={handleBillingChange}
-          className="border p-2 w-full mb-4 rounded"
-        />
-        <input
-          type="text"
-          name="address"
-          placeholder="Street Address"
-          value={billingInfo.address}
-          onChange={handleBillingChange}
-          className="border p-2 w-full mb-4 rounded"
-        />
-        <div className="flex space-x-4">
+        {Object.keys(billingInfo).map((field) => (
           <input
+            key={field}
             type="text"
-            name="city"
-            placeholder="City"
-            value={billingInfo.city}
+            name={field}
+            placeholder={field.replace(/([A-Z])/g, " $1").trim()}
+            value={billingInfo[field]}
             onChange={handleBillingChange}
             className="border p-2 w-full mb-4 rounded"
           />
-          <input
-            type="text"
-            name="state"
-            placeholder="State"
-            value={billingInfo.state}
-            onChange={handleBillingChange}
-            className="border p-2 w-full mb-4 rounded"
-          />
-          <input
-            type="text"
-            name="zip"
-            placeholder="ZIP Code"
-            value={billingInfo.zip}
-            onChange={handleBillingChange}
-            className="border p-2 w-full mb-4 rounded"
-          />
-        </div>
+        ))}
       </div>
 
-      {/* Card Details Section */}
+      {/* Card Details */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-8">
         <h2 className="text-xl font-semibold mb-4">Payment Information</h2>
-        <input
-          type="text"
-          name="cardNumber"
-          placeholder="Card Number"
-          value={cardInfo.cardNumber}
-          onChange={handleCardChange}
-          className="border p-2 w-full mb-4 rounded"
-        />
-        <div className="flex space-x-4">
+        {Object.keys(cardInfo).map((field) => (
           <input
+            key={field}
             type="text"
-            name="expiryDate"
-            placeholder="MM/YY"
-            value={cardInfo.expiryDate}
+            name={field}
+            placeholder={field.replace(/([A-Z])/g, " $1").trim()}
+            value={cardInfo[field]}
             onChange={handleCardChange}
             className="border p-2 w-full mb-4 rounded"
           />
-          <input
-            type="text"
-            name="cvv"
-            placeholder="CVV"
-            value={cardInfo.cvv}
-            onChange={handleCardChange}
-            className="border p-2 w-full mb-4 rounded"
-          />
-        </div>
+        ))}
       </div>
 
-      {/* Place Order Button */}
       <button
         onClick={handlePlaceOrder}
         className="w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600 transition"

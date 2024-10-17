@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../slices/cartSlice"; // Import from the cartSlice
 import { products } from "../data/products";
 import QuantityControl from "../components/QualityControl";
 
-const ProductPage = ({ addToCart }) => {
+const ProductPage = () => {
   const { id } = useParams();
   const product = products.find((item) => item.id === parseInt(id));
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleAddToCart = () => {
@@ -15,11 +18,11 @@ const ProductPage = ({ addToCart }) => {
       alert("Please select a size.");
       return;
     }
-    addToCart(product, quantity, selectedSize); // Add to cart
-    navigate("/cart"); // Redirect to cart
+    console.log(product)
+    // Dispatch the addToCart action instead of using props
+    dispatch(addToCart({ product, quantity, size: selectedSize }));
+    navigate("/cart");
   };
-
-  const handleSizeSelect = (size) => setSelectedSize(size);
 
   return (
     <div className="min-h-screen p-8 bg-gray-50 flex flex-col md:flex-row items-start gap-8">
@@ -49,8 +52,8 @@ const ProductPage = ({ addToCart }) => {
               {product.sizes.map((size) => (
                 <button
                   key={size}
-                  onClick={() => handleSizeSelect(size)}
-                  className={`px-6 py-2 rounded-md border border-gray-300 transition ${
+                  onClick={() => setSelectedSize(size)}
+                  className={`px-6 py-2 rounded-md border ${
                     selectedSize === size
                       ? "bg-black text-white"
                       : "bg-white text-black hover:bg-gray-200"
