@@ -1,0 +1,11 @@
+{
+  "name": "30daysfullstackproject",
+  "version": "1.0.0",
+  "description": "This project demonstrates a basic **e-commerce flow** using **React**, including:",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
